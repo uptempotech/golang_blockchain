@@ -30,7 +30,7 @@ var (
 	memoryPool      = make(map[string]blockchain.Transaction)
 
 	// KnownNodes ...
-	KnownNodes = []string{"localhost:8080"}
+	KnownNodes = []string{"localhost:3000"}
 )
 
 // Addr ...
