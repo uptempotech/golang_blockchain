@@ -25,8 +25,8 @@ type BlockChain struct {
 	Database *badger.DB
 }
 
-// BlockChainIterator ...
-type BlockChainIterator struct {
+// Iterator ...
+type Iterator struct {
 	CurrentHash []byte
 	Database    *badger.DB
 }
@@ -142,14 +142,14 @@ func (chain *BlockChain) AddBlock(transactions []*Transaction) *Block {
 }
 
 // Iterator ...
-func (chain *BlockChain) Iterator() *BlockChainIterator {
-	iter := &BlockChainIterator{chain.LastHash, chain.Database}
+func (chain *BlockChain) Iterator() *Iterator {
+	iter := &Iterator{chain.LastHash, chain.Database}
 
 	return iter
 }
 
 // Next ...
-func (iter *BlockChainIterator) Next() *Block {
+func (iter *Iterator) Next() *Block {
 	var block *Block
 
 	err := iter.Database.View(func(txn *badger.Txn) error {
