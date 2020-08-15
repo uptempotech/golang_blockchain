@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strconv"
@@ -118,27 +119,39 @@ func (cli *CommandLine) Run() {
 	switch os.Args[1] {
 	case "getbalance":
 		err := getBalanceCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	case "createblockchain":
 		err := createBlockchainCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	case "send":
 		err := sendCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	case "printchain":
 		err := printChainCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	case "createwallet":
 		err := createWalletCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	case "listaddresses":
 		err := listAddressesCmd.Parse(os.Args[2:])
-		blockchain.Handle(err)
+		if err != nil {
+			log.Panic(err)
+		}
 
 	default:
 		cli.printUsage()
