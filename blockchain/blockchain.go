@@ -49,6 +49,7 @@ func InitBlockChain(address string) *BlockChain {
 	opts.Dir = dbPath
 	opts.ValueDir = dbPath
 	opts.Truncate = true
+	opts.Logger = nil
 
 	db, err := badger.Open(opts)
 	Handle(err)
@@ -59,7 +60,8 @@ func InitBlockChain(address string) *BlockChain {
 		fmt.Println("Genesis created")
 		err = txn.Set(genesis.Hash, genesis.Serialize())
 		Handle(err)
-		err = txn.Set([]byte("ln"), genesis.Hash)
+		err = txn.Set([]byte("lh"), genesis.Hash)
+		Handle(err)
 
 		lastHash = genesis.Hash
 
@@ -85,12 +87,13 @@ func ContinueBlockChain(address string) *BlockChain {
 	opts.Dir = dbPath
 	opts.ValueDir = dbPath
 	opts.Truncate = true
+	opts.Logger = nil
 
 	db, err := badger.Open(opts)
 	Handle(err)
 
-	err = db.Update(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte("1h"))
+	err = db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte("lh"))
 		Handle(err)
 		err = item.Value(func(val []byte) error {
 			lastHash = val

@@ -9,9 +9,10 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
+            "program": "${workspaceFolder}/main.go",
             "env": {},
-            "args": ["printchain"]
+            "args": ["printchain"],
+            "showLog": false
         }
     ]
 }
