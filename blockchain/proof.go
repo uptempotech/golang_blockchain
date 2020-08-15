@@ -5,13 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"math"
 	"math/big"
 )
 
 // Take the data from the block
 
-// create a count (nonce) which starts at 0
+// create a counter (nonce) which starts at 0
 
 // create a hash of the data plus the counter
 
@@ -20,16 +21,16 @@ import (
 // Requirements:
 // The First few bytes must contain 0s
 
-// Difficulty set the difficulty for the mining of the block
+// Difficulty ...
 const Difficulty = 18
 
-// ProofOfWork defines the structure of the Proof Of Work algorithm
+// ProofOfWork ...
 type ProofOfWork struct {
 	Block  *Block
 	Target *big.Int
 }
 
-// NewProof takes a pointer to a Block and a pointer to a Proof Of Work
+// NewProof ...
 func NewProof(b *Block) *ProofOfWork {
 	target := big.NewInt(1)
 	target.Lsh(target, uint(256-Difficulty))
@@ -39,7 +40,7 @@ func NewProof(b *Block) *ProofOfWork {
 	return pow
 }
 
-// InitData initializes the data
+// InitData ...
 func (pow *ProofOfWork) InitData(nonce int) []byte {
 	data := bytes.Join(
 		[][]byte{
@@ -50,10 +51,11 @@ func (pow *ProofOfWork) InitData(nonce int) []byte {
 		},
 		[]byte{},
 	)
+
 	return data
 }
 
-// Run returns an integer and a slice of bytes.
+// Run ...
 func (pow *ProofOfWork) Run() (int, []byte) {
 	var intHash big.Int
 	var hash [32]byte
@@ -72,13 +74,14 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 		} else {
 			nonce++
 		}
+
 	}
 	fmt.Println()
 
 	return nonce, hash[:]
 }
 
-// Validate will validate the block
+// Validate ...
 func (pow *ProofOfWork) Validate() bool {
 	var intHash big.Int
 
@@ -90,11 +93,14 @@ func (pow *ProofOfWork) Validate() bool {
 	return intHash.Cmp(pow.Target) == -1
 }
 
-// ToHex utility to return a byte array
+// ToHex ...
 func ToHex(num int64) []byte {
 	buff := new(bytes.Buffer)
 	err := binary.Write(buff, binary.BigEndian, num)
-	Handle(err)
+	if err != nil {
+		log.Panic(err)
+
+	}
 
 	return buff.Bytes()
 }
