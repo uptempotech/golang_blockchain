@@ -115,14 +115,14 @@ func NewTransaction(from, to string, amount int, chain *BlockChain) *Transaction
 	return &tx
 }
 
-// IsCoinBase ...
-func (tx *Transaction) IsCoinBase() bool {
+// IsCoinbase ...
+func (tx *Transaction) IsCoinbase() bool {
 	return len(tx.Inputs) == 1 && len(tx.Inputs[0].ID) == 0 && tx.Inputs[0].Out == -1
 }
 
 // Sign ...
 func (tx *Transaction) Sign(privKey ecdsa.PrivateKey, prevTXs map[string]Transaction) {
-	if tx.IsCoinBase() {
+	if tx.IsCoinbase() {
 		return
 	}
 
@@ -169,7 +169,7 @@ func (tx *Transaction) TrimmedCopy() Transaction {
 
 // Verify ...
 func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
-	if tx.IsCoinBase() {
+	if tx.IsCoinbase() {
 		return true
 	}
 
@@ -201,7 +201,11 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 		x.SetBytes(in.PubKey[:(keyLen / 2)])
 		y.SetBytes(in.PubKey[(keyLen / 2):])
 
-		rawPubKey := ecdsa.PublicKey{curve, &x, &y}
+		rawPubKey := ecdsa.PublicKey{
+			Curve: curve,
+			X:     &x,
+			Y:     &y,
+		}
 		if ecdsa.Verify(&rawPubKey, txCopy.ID, &r, &s) {
 			return false
 		}
@@ -214,19 +218,19 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 func (tx Transaction) String() string {
 	var lines []string
 
-	lines = append(lines, fmt.Sprintf("--- Transaction %x", tx.ID))
+	lines = append(lines, fmt.Sprintf("--- Transaction %x:", tx.ID))
 	for i, input := range tx.Inputs {
-		lines = append(lines, fmt.Sprintf("     Input %d", i))
-		lines = append(lines, fmt.Sprintf("       TXID: %x", input.ID))
-		lines = append(lines, fmt.Sprintf("       Out: %x", input.Out))
+		lines = append(lines, fmt.Sprintf("     Input %d:", i))
+		lines = append(lines, fmt.Sprintf("       TXID:     %x", input.ID))
+		lines = append(lines, fmt.Sprintf("       Out:       %d", input.Out))
 		lines = append(lines, fmt.Sprintf("       Signature: %x", input.Signature))
-		lines = append(lines, fmt.Sprintf("       PubKey: %x", input.PubKey))
+		lines = append(lines, fmt.Sprintf("       PubKey:    %x", input.PubKey))
 	}
 
 	for i, output := range tx.Outputs {
-		lines = append(lines, fmt.Sprintf("     Output %d", i))
-		lines = append(lines, fmt.Sprintf("      Value: %d", output.Value))
-		lines = append(lines, fmt.Sprintf("      Script: %x", output.PubKeyHash))
+		lines = append(lines, fmt.Sprintf("     Output %d:", i))
+		lines = append(lines, fmt.Sprintf("       Value:  %d", output.Value))
+		lines = append(lines, fmt.Sprintf("       Script: %x", output.PubKeyHash))
 	}
 
 	return strings.Join(lines, "\n")
