@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-const walletFile = "./tmp/wallets.data"
+const walletFile = "./tmp/wallets_%s.data"
 
 // Wallets ...
 type Wallets struct {
@@ -18,11 +18,11 @@ type Wallets struct {
 }
 
 // CreateWallets ...
-func CreateWallets() (*Wallets, error) {
+func CreateWallets(nodeID string) (*Wallets, error) {
 	wallets := Wallets{}
 	wallets.Wallets = make(map[string]*Wallet)
 
-	err := wallets.LoadFile()
+	err := wallets.LoadFile(nodeID)
 
 	return &wallets, err
 }
@@ -54,7 +54,8 @@ func (ws Wallets) GetWallet(address string) Wallet {
 }
 
 // LoadFile ...
-func (ws *Wallets) LoadFile() error {
+func (ws *Wallets) LoadFile(nodeID string) error {
+	walletFile := fmt.Sprintf(walletFile, nodeID)
 	if _, err := os.Stat(walletFile); os.IsNotExist(err) {
 		return err
 	}
@@ -76,7 +77,8 @@ func (ws *Wallets) LoadFile() error {
 }
 
 // SaveFile ...
-func (ws *Wallets) SaveFile() {
+func (ws *Wallets) SaveFile(nodeID string) {
+	walletFile := fmt.Sprintf(walletFile, nodeID)
 	var content bytes.Buffer
 
 	gob.Register(elliptic.P256())
