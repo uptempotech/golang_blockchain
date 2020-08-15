@@ -15,3 +15,15 @@ func (b *Block) Serialize() []byte {
 
 	return res.Bytes()
 }
+
+// Deserialize takes a byte array and returns a block
+func Deserialize(data []byte) *Block {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+
+	err := decoder.Decode(&block)
+	Handle(err)
+
+	return &block
+}
