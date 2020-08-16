@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -34,5 +35,36 @@ func StartServer(nodeID, minerAddress string) {
 			log.Panic(err)
 		}
 		go HandleConnection(conn, chain)
+	}
+}
+
+// HandleConnection ...
+func HandleConnection(conn net.Conn, chain *blockchain.BlockChain) {
+	req, err := ioutil.ReadAll(conn)
+	defer conn.Close()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	command := BytesToCmd(req[:commandLength])
+	fmt.Printf("Received %s command\n", command)
+
+	switch command {
+	case "addr":
+		HandleAddr(req)
+	case "block":
+		HandleBlock(req, chain)
+	case "inv":
+		HandleInv(req, chain)
+	case "getblocks":
+		HandleGetBlocks(req, chain)
+	case "getdata":
+		HandleGetData(req, chain)
+	case "tx":
+		HandleTx(req, chain)
+	case "version":
+		HandleVersion(req, chain)
+	default:
+		fmt.Println("Unknown command")
 	}
 }
