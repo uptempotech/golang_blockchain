@@ -10,8 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "env": {},
-            "args": ["printchain"],
+            "env": {"NODE_ID": "3000"},
+            "args": ["startnode"],
             "showLog": false
         }
     ]

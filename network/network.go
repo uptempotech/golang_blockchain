@@ -119,6 +119,7 @@ func SendAddr(address string) {
 	payload := GobEncode(nodes)
 	request := append(CmdToBytes("addr"), payload...)
 
+	log.Printf("SendAddr: %s", address)
 	SendData(address, request)
 }
 
@@ -260,7 +261,8 @@ func HandleInv(request []byte, chain *blockchain.BlockChain) {
 		log.Panic(err)
 	}
 
-	fmt.Printf("Received inventory with %d %s\n", len(payload.Items), payload.Type)
+	fmt.Printf("(HandleInv) NodeAddress: %s, MemoryPool: %d\n", nodeAddress, len(memoryPool))
+	fmt.Printf("(HandleInv) Received inventory with %d %s\n", len(payload.Items), payload.Type)
 
 	if payload.Type == "block" {
 		blocksInTransit = payload.Items
@@ -347,9 +349,10 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 	tx := blockchain.DeserializeTransaction(txData)
 	memoryPool[hex.EncodeToString(tx.ID)] = tx
 
-	fmt.Printf("%s, %d", nodeAddress, len(memoryPool))
+	fmt.Printf("(HandleTx) NodeAddress: %s, MemoryPool: %d, MineAddress: %s\n", nodeAddress, len(memoryPool), mineAddress)
 
 	if nodeAddress == KnownNodes[0] {
+		log.Printf("NodeAddress: %s = KnownNodes[0]: %s", nodeAddress, KnownNodes[0])
 		for _, node := range KnownNodes {
 			if node != nodeAddress && node != payload.AddrFrom {
 				SendInv(node, "tx", [][]byte{tx.ID})
@@ -357,6 +360,7 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 		}
 	} else {
 		if len(memoryPool) >= 2 && len(mineAddress) > 0 {
+			log.Println("Calling MineTx")
 			MineTx(chain)
 		}
 	}
@@ -365,6 +369,8 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 // MineTx ...
 func MineTx(chain *blockchain.BlockChain) {
 	var txs []*blockchain.Transaction
+
+	log.Println("Inside MineTx")
 
 	for id := range memoryPool {
 		fmt.Printf("ts: %s\n", memoryPool[id].ID)
@@ -416,8 +422,12 @@ func HandleVersion(request []byte, chain *blockchain.BlockChain) {
 		log.Panic(err)
 	}
 
+	log.Printf("Remote Version: %d\n", payload.Version)
+
 	bestHeight := chain.GetBestHeight()
 	otherHeight := payload.BestHeight
+
+	log.Printf("My Height: %d -- Their Height: %d", bestHeight, otherHeight)
 
 	if bestHeight < otherHeight {
 		SendGetBlocks(payload.AddrFrom)
