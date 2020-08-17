@@ -246,7 +246,7 @@ func HandleVersion(request []byte, chain *blockchain.BlockChain) {
 	bestHeight := chain.GetBestHeight()
 	otherHeight := payload.BestHeight
 
-	log.Printf("My Height: %d -- Their Height: %d", bestHeight, otherHeight)
+	log.Printf("My Height: %d -- %s Height: %d", bestHeight, payload.AddrFrom, otherHeight)
 
 	if bestHeight < otherHeight {
 		SendGetBlocks(payload.AddrFrom)
