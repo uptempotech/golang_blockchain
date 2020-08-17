@@ -7,7 +7,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/uptempotech/golang_blockchain/blockchain"
+	"github.com/uptempotech/golang_blockchain/core"
 )
 
 // SendAddr ...
@@ -23,7 +23,7 @@ func SendAddr(address string) {
 }
 
 // SendBlock ...
-func SendBlock(addr string, b *blockchain.Block) {
+func SendBlock(addr string, b *core.Block) {
 	log.Println("Entering SendBlock")
 	data := Block{nodeAddress, b.Serialize()}
 	payload := GobEncode(data)
@@ -88,7 +88,7 @@ func SendGetData(address, kind string, id []byte) {
 }
 
 // SendTx ...
-func SendTx(addr string, tnx *blockchain.Transaction) {
+func SendTx(addr string, tnx *core.Transaction) {
 	log.Println("Entering SendTX")
 	data := Tx{nodeAddress, tnx.Serialize()}
 	payload := GobEncode(data)
@@ -98,7 +98,7 @@ func SendTx(addr string, tnx *blockchain.Transaction) {
 }
 
 // SendVersion ...
-func SendVersion(addr string, chain *blockchain.BlockChain) {
+func SendVersion(addr string, chain *core.BlockChain) {
 	log.Println("Entering SendVersion")
 	bestHeight := chain.GetBestHeight()
 	payload := GobEncode(Version{version, bestHeight, nodeAddress})

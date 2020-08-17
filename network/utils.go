@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/uptempotech/golang_blockchain/blockchain"
+	"github.com/uptempotech/golang_blockchain/core"
 	"gopkg.in/vrecan/death.v3"
 )
 
@@ -73,7 +73,7 @@ func NodeIsKnown(addr string) bool {
 }
 
 // CloseDB ...
-func CloseDB(chain *blockchain.BlockChain) {
+func CloseDB(chain *core.BlockChain) {
 	d := death.NewDeath(syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	d.WaitForDeathWithFunc(func() {

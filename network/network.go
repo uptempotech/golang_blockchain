@@ -1,8 +1,6 @@
 package network
 
-import (
-	"github.com/uptempotech/golang_blockchain/blockchain"
-)
+import "github.com/uptempotech/golang_blockchain/core"
 
 const (
 	protocol      = "tcp"
@@ -14,7 +12,7 @@ var (
 	nodeAddress     string
 	mineAddress     string
 	blocksInTransit = [][]byte{}
-	memoryPool      = make(map[string]blockchain.Transaction)
+	memoryPool      = make(map[string]core.Transaction)
 
 	// KnownNodes ...
 	KnownNodes = []string{"localhost:3000"}

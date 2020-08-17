@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/uptempotech/golang_blockchain/blockchain"
+	"github.com/uptempotech/golang_blockchain/core"
 )
 
 // StartServer ...
@@ -19,7 +19,7 @@ func StartServer(nodeID, minerAddress string) {
 	}
 	defer ln.Close()
 
-	chain := blockchain.ContinueBlockChain(nodeID)
+	chain := core.ContinueBlockChain(nodeID)
 	defer chain.Database.Close()
 	go CloseDB(chain)
 
@@ -39,7 +39,7 @@ func StartServer(nodeID, minerAddress string) {
 }
 
 // ProcessConnection ...
-func ProcessConnection(conn net.Conn, chain *blockchain.BlockChain) {
+func ProcessConnection(conn net.Conn, chain *core.BlockChain) {
 	req, err := ioutil.ReadAll(conn)
 	defer conn.Close()
 	if err != nil {

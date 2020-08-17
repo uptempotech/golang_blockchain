@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/uptempotech/golang_blockchain/blockchain"
+	"github.com/uptempotech/golang_blockchain/core"
 )
 
 // HandleAddr ...
@@ -29,7 +29,7 @@ func HandleAddr(request []byte) {
 }
 
 // HandleBlock ...
-func HandleBlock(request []byte, chain *blockchain.BlockChain) {
+func HandleBlock(request []byte, chain *core.BlockChain) {
 	log.Println("Entering HandleBlock")
 	var buff bytes.Buffer
 	var payload Block
@@ -42,7 +42,7 @@ func HandleBlock(request []byte, chain *blockchain.BlockChain) {
 	}
 
 	blockData := payload.Block
-	block := blockchain.Deserialize(blockData)
+	block := core.Deserialize(blockData)
 
 	fmt.Println("Recieved a new block!")
 	chain.AddBlock(block)
@@ -55,13 +55,13 @@ func HandleBlock(request []byte, chain *blockchain.BlockChain) {
 
 		blocksInTransit = blocksInTransit[1:]
 	} else {
-		UTXOSet := blockchain.UTXOSet{Blockchain: chain}
+		UTXOSet := core.UTXOSet{Blockchain: chain}
 		UTXOSet.Reindex()
 	}
 }
 
 // HandleInv ...
-func HandleInv(request []byte, chain *blockchain.BlockChain) {
+func HandleInv(request []byte, chain *core.BlockChain) {
 	log.Printf("Entering HandleInv")
 	var buff bytes.Buffer
 	var payload Inv
@@ -103,7 +103,7 @@ func HandleInv(request []byte, chain *blockchain.BlockChain) {
 }
 
 // HandleGetBlocks ...
-func HandleGetBlocks(request []byte, chain *blockchain.BlockChain) {
+func HandleGetBlocks(request []byte, chain *core.BlockChain) {
 	log.Println("Entering HandleGetBlocks")
 	var buff bytes.Buffer
 	var payload GetBlocks
@@ -120,7 +120,7 @@ func HandleGetBlocks(request []byte, chain *blockchain.BlockChain) {
 }
 
 // HandleGetData ...
-func HandleGetData(request []byte, chain *blockchain.BlockChain) {
+func HandleGetData(request []byte, chain *core.BlockChain) {
 	log.Println("Entering HandleGetData")
 	var buff bytes.Buffer
 	var payload GetData
@@ -150,7 +150,7 @@ func HandleGetData(request []byte, chain *blockchain.BlockChain) {
 }
 
 // HandleTx ...
-func HandleTx(request []byte, chain *blockchain.BlockChain) {
+func HandleTx(request []byte, chain *core.BlockChain) {
 	log.Println("EnteringHandleTx")
 	var buff bytes.Buffer
 	var payload Tx
@@ -163,7 +163,7 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 	}
 
 	txData := payload.Transaction
-	tx := blockchain.DeserializeTransaction(txData)
+	tx := core.DeserializeTransaction(txData)
 	memoryPool[hex.EncodeToString(tx.ID)] = tx
 
 	fmt.Printf("(HandleTx) NodeAddress: %s, MemoryPool: %d, MineAddress: %s\n", nodeAddress, len(memoryPool), mineAddress)
@@ -184,9 +184,9 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 }
 
 // MineTx ...
-func MineTx(chain *blockchain.BlockChain) {
+func MineTx(chain *core.BlockChain) {
 	log.Println("Inside MineTx")
-	var txs []*blockchain.Transaction
+	var txs []*core.Transaction
 
 	for id := range memoryPool {
 		fmt.Printf("ts: %x\n", memoryPool[id].ID)
@@ -203,11 +203,11 @@ func MineTx(chain *blockchain.BlockChain) {
 		return
 	}
 
-	cbTx := blockchain.CoinbaseTx(mineAddress, "")
+	cbTx := core.CoinbaseTx(mineAddress, "")
 	txs = append(txs, cbTx)
 
 	newBlock := chain.MineBlock(txs)
-	UTXOSet := blockchain.UTXOSet{Blockchain: chain}
+	UTXOSet := core.UTXOSet{Blockchain: chain}
 	UTXOSet.Reindex()
 
 	fmt.Println("New Block mined")
@@ -229,7 +229,7 @@ func MineTx(chain *blockchain.BlockChain) {
 }
 
 // HandleVersion ...
-func HandleVersion(request []byte, chain *blockchain.BlockChain) {
+func HandleVersion(request []byte, chain *core.BlockChain) {
 	log.Println("Entering HandleVersion")
 	var buff bytes.Buffer
 	var payload Version

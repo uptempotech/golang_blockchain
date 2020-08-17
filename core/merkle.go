@@ -1,4 +1,4 @@
-package blockchain
+package core
 
 import "crypto/sha256"
 
