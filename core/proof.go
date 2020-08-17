@@ -10,17 +10,6 @@ import (
 	"math/big"
 )
 
-// Take the data from the block
-
-// create a counter (nonce) which starts at 0
-
-// create a hash of the data plus the counter
-
-// check the hash to see if it meets a set of requirements
-
-// Requirements:
-// The First few bytes must contain 0s
-
 // Difficulty ...
 const Difficulty = 18
 
@@ -90,7 +79,9 @@ func (pow *ProofOfWork) Validate() bool {
 	hash := sha256.Sum256(data)
 	intHash.SetBytes(hash[:])
 
-	return intHash.Cmp(pow.Target) == -1
+	res := intHash.Cmp(pow.Target) == -1
+
+	return res
 }
 
 // ToHex ...
