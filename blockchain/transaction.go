@@ -55,7 +55,6 @@ func DeserializeTransaction(data []byte) Transaction {
 	decoder := gob.NewDecoder(bytes.NewReader(data))
 	err := decoder.Decode(&transaction)
 	Handle(err)
-
 	return transaction
 }
 
@@ -65,7 +64,6 @@ func CoinbaseTx(to, data string) *Transaction {
 		randData := make([]byte, 24)
 		_, err := rand.Read(randData)
 		Handle(err)
-
 		data = fmt.Sprintf("%x", randData)
 	}
 
@@ -138,15 +136,15 @@ func (tx *Transaction) Sign(privKey ecdsa.PrivateKey, prevTXs map[string]Transac
 		prevTX := prevTXs[hex.EncodeToString(in.ID)]
 		txCopy.Inputs[inID].Signature = nil
 		txCopy.Inputs[inID].PubKey = prevTX.Outputs[in.Out].PubKeyHash
-		txCopy.ID = txCopy.Hash()
-		txCopy.Inputs[inID].PubKey = nil
 
-		r, s, err := ecdsa.Sign(rand.Reader, &privKey, txCopy.ID)
+		dataToSign := fmt.Sprintf("%x\n", txCopy)
+
+		r, s, err := ecdsa.Sign(rand.Reader, &privKey, []byte(dataToSign))
 		Handle(err)
 		signature := append(r.Bytes(), s.Bytes()...)
 
 		tx.Inputs[inID].Signature = signature
-
+		txCopy.Inputs[inID].PubKey = nil
 	}
 }
 
@@ -169,8 +167,6 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 		prevTx := prevTXs[hex.EncodeToString(in.ID)]
 		txCopy.Inputs[inID].Signature = nil
 		txCopy.Inputs[inID].PubKey = prevTx.Outputs[in.Out].PubKeyHash
-		txCopy.ID = txCopy.Hash()
-		txCopy.Inputs[inID].PubKey = nil
 
 		r := big.Int{}
 		s := big.Int{}
@@ -185,14 +181,13 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 		x.SetBytes(in.PubKey[:(keyLen / 2)])
 		y.SetBytes(in.PubKey[(keyLen / 2):])
 
-		rawPubKey := ecdsa.PublicKey{
-			Curve: curve,
-			X:     &x,
-			Y:     &y,
-		}
-		if ecdsa.Verify(&rawPubKey, txCopy.ID, &r, &s) == false {
+		dataToVerify := fmt.Sprintf("%x\n", txCopy)
+
+		rawPubKey := ecdsa.PublicKey{Curve: curve, X: &x, Y: &y}
+		if ecdsa.Verify(&rawPubKey, []byte(dataToVerify), &r, &s) == false {
 			return false
 		}
+		txCopy.Inputs[inID].PubKey = nil
 	}
 
 	return true
