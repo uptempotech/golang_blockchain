@@ -12,6 +12,7 @@ import (
 
 // SendAddr ...
 func SendAddr(address string) {
+	log.Println("Entering SendAddr")
 	nodes := Addr{KnownNodes}
 	nodes.AddrList = append(nodes.AddrList, nodeAddress)
 	payload := GobEncode(nodes)
@@ -23,6 +24,7 @@ func SendAddr(address string) {
 
 // SendBlock ...
 func SendBlock(addr string, b *blockchain.Block) {
+	log.Println("Entering SendBlock")
 	data := Block{nodeAddress, b.Serialize()}
 	payload := GobEncode(data)
 	request := append(CmdToBytes("block"), payload...)
@@ -32,6 +34,7 @@ func SendBlock(addr string, b *blockchain.Block) {
 
 // SendData ...
 func SendData(addr string, data []byte) {
+	log.Println("Entering SendData")
 	conn, err := net.Dial(protocol, addr)
 	if err != nil {
 		fmt.Printf("%s is not available\n", addr)
@@ -58,6 +61,7 @@ func SendData(addr string, data []byte) {
 
 // SendInv ...
 func SendInv(address, kind string, items [][]byte) {
+	log.Println("Entering SendInv")
 	inventory := Inv{nodeAddress, kind, items}
 	payload := GobEncode(inventory)
 	request := append(CmdToBytes("inv"), payload...)
@@ -67,6 +71,7 @@ func SendInv(address, kind string, items [][]byte) {
 
 // SendGetBlocks ...
 func SendGetBlocks(address string) {
+	log.Println("Entering SendGetBlocks")
 	payload := GobEncode(GetBlocks{nodeAddress})
 	request := append(CmdToBytes("getblocks"), payload...)
 
@@ -75,6 +80,7 @@ func SendGetBlocks(address string) {
 
 // SendGetData ...
 func SendGetData(address, kind string, id []byte) {
+	log.Println("Entering SendGetData")
 	payload := GobEncode(GetData{nodeAddress, kind, id})
 	request := append(CmdToBytes("getdata"), payload...)
 
@@ -83,6 +89,7 @@ func SendGetData(address, kind string, id []byte) {
 
 // SendTx ...
 func SendTx(addr string, tnx *blockchain.Transaction) {
+	log.Println("Entering SendTX")
 	data := Tx{nodeAddress, tnx.Serialize()}
 	payload := GobEncode(data)
 	request := append(CmdToBytes("tx"), payload...)
@@ -92,6 +99,7 @@ func SendTx(addr string, tnx *blockchain.Transaction) {
 
 // SendVersion ...
 func SendVersion(addr string, chain *blockchain.BlockChain) {
+	log.Println("Entering SendVersion")
 	bestHeight := chain.GetBestHeight()
 	payload := GobEncode(Version{version, bestHeight, nodeAddress})
 	request := append(CmdToBytes("version"), payload...)

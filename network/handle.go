@@ -12,6 +12,7 @@ import (
 
 // HandleAddr ...
 func HandleAddr(request []byte) {
+	log.Println("Entering HandleAddr")
 	var buff bytes.Buffer
 	var payload Addr
 
@@ -29,6 +30,7 @@ func HandleAddr(request []byte) {
 
 // HandleBlock ...
 func HandleBlock(request []byte, chain *blockchain.BlockChain) {
+	log.Println("Entering HandleBlock")
 	var buff bytes.Buffer
 	var payload Block
 
@@ -60,6 +62,7 @@ func HandleBlock(request []byte, chain *blockchain.BlockChain) {
 
 // HandleInv ...
 func HandleInv(request []byte, chain *blockchain.BlockChain) {
+	log.Printf("Entering HandleInv")
 	var buff bytes.Buffer
 	var payload Inv
 
@@ -70,13 +73,13 @@ func HandleInv(request []byte, chain *blockchain.BlockChain) {
 		log.Panic(err)
 	}
 
-	fmt.Printf("(HandleInv) NodeAddress: %s, MemoryPool: %d\n", nodeAddress, len(memoryPool))
 	fmt.Printf("(HandleInv) Received inventory with %d %s\n", len(payload.Items), payload.Type)
 
 	if payload.Type == "block" {
 		blocksInTransit = payload.Items
 
 		blockHash := payload.Items[0]
+		log.Printf("Need to call SendGetData with command block, from: %s, hash: %x\n", payload.AddrFrom, blockHash)
 		SendGetData(payload.AddrFrom, "block", blockHash)
 
 		newInTransit := [][]byte{}
@@ -93,12 +96,15 @@ func HandleInv(request []byte, chain *blockchain.BlockChain) {
 
 		if memoryPool[hex.EncodeToString(txID)].ID == nil {
 			SendGetData(payload.AddrFrom, "tx", txID)
+		} else {
+			log.Println("ID found in memoryPool")
 		}
 	}
 }
 
 // HandleGetBlocks ...
 func HandleGetBlocks(request []byte, chain *blockchain.BlockChain) {
+	log.Println("Entering HandleGetBlocks")
 	var buff bytes.Buffer
 	var payload GetBlocks
 
@@ -115,6 +121,7 @@ func HandleGetBlocks(request []byte, chain *blockchain.BlockChain) {
 
 // HandleGetData ...
 func HandleGetData(request []byte, chain *blockchain.BlockChain) {
+	log.Println("Entering HandleGetData")
 	var buff bytes.Buffer
 	var payload GetData
 
@@ -144,6 +151,7 @@ func HandleGetData(request []byte, chain *blockchain.BlockChain) {
 
 // HandleTx ...
 func HandleTx(request []byte, chain *blockchain.BlockChain) {
+	log.Println("EnteringHandleTx")
 	var buff bytes.Buffer
 	var payload Tx
 
@@ -177,15 +185,16 @@ func HandleTx(request []byte, chain *blockchain.BlockChain) {
 
 // MineTx ...
 func MineTx(chain *blockchain.BlockChain) {
+	log.Println("Inside MineTx")
 	var txs []*blockchain.Transaction
 
-	log.Println("Inside MineTx")
-
 	for id := range memoryPool {
-		fmt.Printf("ts: %s\n", memoryPool[id].ID)
+		fmt.Printf("ts: %x\n", memoryPool[id].ID)
 		tx := memoryPool[id]
 		if chain.VerifyTransaction(&tx) {
 			txs = append(txs, &tx)
+		} else {
+			log.Printf("ts: %x - failed VerifyTransaction", memoryPool[id].ID)
 		}
 	}
 
@@ -221,6 +230,7 @@ func MineTx(chain *blockchain.BlockChain) {
 
 // HandleVersion ...
 func HandleVersion(request []byte, chain *blockchain.BlockChain) {
+	log.Println("Entering HandleVersion")
 	var buff bytes.Buffer
 	var payload Version
 

@@ -34,12 +34,12 @@ func StartServer(nodeID, minerAddress string) {
 		if err != nil {
 			log.Panic(err)
 		}
-		go HandleConnection(conn, chain)
+		go ProcessConnection(conn, chain)
 	}
 }
 
-// HandleConnection ...
-func HandleConnection(conn net.Conn, chain *blockchain.BlockChain) {
+// ProcessConnection ...
+func ProcessConnection(conn net.Conn, chain *blockchain.BlockChain) {
 	req, err := ioutil.ReadAll(conn)
 	defer conn.Close()
 	if err != nil {
