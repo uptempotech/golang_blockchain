@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/dgraph-io/badger"
@@ -36,4 +37,24 @@ func openDB(dir string, opts badger.Options) (*badger.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func intToBytes(num int) []byte {
+	s := strconv.Itoa(num)
+
+	return []byte(s)
+}
+
+func bytesToInt(data []byte) int {
+	i, err := strconv.Atoi(string(data))
+	Handle(err)
+
+	return i
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

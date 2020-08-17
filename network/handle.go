@@ -12,7 +12,6 @@ import (
 
 // HandleAddr ...
 func HandleAddr(request []byte) {
-	log.Println("Entering HandleAddr")
 	var buff bytes.Buffer
 	var payload Addr
 
@@ -30,7 +29,6 @@ func HandleAddr(request []byte) {
 
 // HandleBlock ...
 func HandleBlock(request []byte, chain *core.BlockChain) {
-	log.Println("Entering HandleBlock")
 	var buff bytes.Buffer
 	var payload Block
 
@@ -62,7 +60,6 @@ func HandleBlock(request []byte, chain *core.BlockChain) {
 
 // HandleInv ...
 func HandleInv(request []byte, chain *core.BlockChain) {
-	log.Printf("Entering HandleInv")
 	var buff bytes.Buffer
 	var payload Inv
 
@@ -73,13 +70,10 @@ func HandleInv(request []byte, chain *core.BlockChain) {
 		log.Panic(err)
 	}
 
-	fmt.Printf("(HandleInv) Received inventory with %d %s\n", len(payload.Items), payload.Type)
-
 	if payload.Type == "block" {
 		blocksInTransit = payload.Items
 
 		blockHash := payload.Items[0]
-		log.Printf("Need to call SendGetData with command block, from: %s, hash: %x\n", payload.AddrFrom, blockHash)
 		SendGetData(payload.AddrFrom, "block", blockHash)
 
 		newInTransit := [][]byte{}
@@ -104,7 +98,6 @@ func HandleInv(request []byte, chain *core.BlockChain) {
 
 // HandleGetBlocks ...
 func HandleGetBlocks(request []byte, chain *core.BlockChain) {
-	log.Println("Entering HandleGetBlocks")
 	var buff bytes.Buffer
 	var payload GetBlocks
 
@@ -121,7 +114,6 @@ func HandleGetBlocks(request []byte, chain *core.BlockChain) {
 
 // HandleGetData ...
 func HandleGetData(request []byte, chain *core.BlockChain) {
-	log.Println("Entering HandleGetData")
 	var buff bytes.Buffer
 	var payload GetData
 
@@ -151,7 +143,6 @@ func HandleGetData(request []byte, chain *core.BlockChain) {
 
 // HandleTx ...
 func HandleTx(request []byte, chain *core.BlockChain) {
-	log.Println("EnteringHandleTx")
 	var buff bytes.Buffer
 	var payload Tx
 
@@ -166,10 +157,7 @@ func HandleTx(request []byte, chain *core.BlockChain) {
 	tx := core.DeserializeTransaction(txData)
 	memoryPool[hex.EncodeToString(tx.ID)] = tx
 
-	fmt.Printf("(HandleTx) NodeAddress: %s, MemoryPool: %d, MineAddress: %s\n", nodeAddress, len(memoryPool), mineAddress)
-
 	if nodeAddress == KnownNodes[0] {
-		log.Printf("NodeAddress: %s = KnownNodes[0]: %s", nodeAddress, KnownNodes[0])
 		for _, node := range KnownNodes {
 			if node != nodeAddress && node != payload.AddrFrom {
 				SendInv(node, "tx", [][]byte{tx.ID})
@@ -177,60 +165,13 @@ func HandleTx(request []byte, chain *core.BlockChain) {
 		}
 	} else {
 		if len(memoryPool) >= 2 && len(mineAddress) > 0 {
-			log.Println("Calling MineTx")
-			MineTx(chain)
+			mineblock(chain)
 		}
-	}
-}
-
-// MineTx ...
-func MineTx(chain *core.BlockChain) {
-	log.Println("Inside MineTx")
-	var txs []*core.Transaction
-
-	for id := range memoryPool {
-		fmt.Printf("ts: %x\n", memoryPool[id].ID)
-		tx := memoryPool[id]
-		if chain.VerifyTransaction(&tx) {
-			txs = append(txs, &tx)
-		} else {
-			log.Printf("ts: %x - failed VerifyTransaction", memoryPool[id].ID)
-		}
-	}
-
-	if len(txs) == 0 {
-		fmt.Println("All Transactions are invalid")
-		return
-	}
-
-	cbTx := core.CoinbaseTx(mineAddress, "")
-	txs = append(txs, cbTx)
-
-	newBlock := chain.MineBlock(txs)
-	UTXOSet := core.UTXOSet{Blockchain: chain}
-	UTXOSet.Reindex()
-
-	fmt.Println("New Block mined")
-
-	for _, tx := range txs {
-		txID := hex.EncodeToString(tx.ID)
-		delete(memoryPool, txID)
-	}
-
-	for _, node := range KnownNodes {
-		if node != nodeAddress {
-			SendInv(node, "block", [][]byte{newBlock.Hash})
-		}
-	}
-
-	if len(memoryPool) > 0 {
-		MineTx(chain)
 	}
 }
 
 // HandleVersion ...
 func HandleVersion(request []byte, chain *core.BlockChain) {
-	log.Println("Entering HandleVersion")
 	var buff bytes.Buffer
 	var payload Version
 
@@ -241,12 +182,8 @@ func HandleVersion(request []byte, chain *core.BlockChain) {
 		log.Panic(err)
 	}
 
-	log.Printf("Remote Version: %d\n", payload.Version)
-
 	bestHeight := chain.GetBestHeight()
 	otherHeight := payload.BestHeight
-
-	log.Printf("My Height: %d -- %s Height: %d", bestHeight, payload.AddrFrom, otherHeight)
 
 	if bestHeight < otherHeight {
 		SendGetBlocks(payload.AddrFrom)

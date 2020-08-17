@@ -13,10 +13,10 @@ var (
 	mineAddress     string
 	blocksInTransit = [][]byte{}
 	memoryPool      = make(map[string]core.Transaction)
-
-	// KnownNodes ...
-	KnownNodes = []string{"localhost:3000"}
 )
+
+// KnownNodes ...
+var KnownNodes = []string{"localhost:3000"}
 
 // Addr ...
 type Addr struct {

@@ -26,6 +26,7 @@ func StartServer(nodeID, minerAddress string) {
 	if len(KnownNodes) == 0 {
 		KnownNodes[0] = nodeAddress
 	}
+
 	if nodeAddress != KnownNodes[0] {
 		SendVersion(KnownNodes[0], chain)
 	}

@@ -10,8 +10,11 @@ import (
 	"math/big"
 )
 
-// Difficulty ...
-const Difficulty = 18
+var (
+	maxNonce = math.MaxInt64
+)
+
+const difficulty = 12
 
 // ProofOfWork ...
 type ProofOfWork struct {
@@ -22,21 +25,26 @@ type ProofOfWork struct {
 // NewProof ...
 func NewProof(b *Block) *ProofOfWork {
 	target := big.NewInt(1)
-	target.Lsh(target, uint(256-Difficulty))
+	target.Lsh(target, uint(256-difficulty))
 
 	pow := &ProofOfWork{b, target}
-
 	return pow
 }
 
-// InitData ...
-func (pow *ProofOfWork) InitData(nonce int) []byte {
+// PrepareData ...
+func (pow *ProofOfWork) PrepareData(nonce int) []byte {
+	txAsBytes := []byte{}
+	for _, tx := range pow.Block.Transactions {
+		txAsBytes = append(txAsBytes, tx.Serialize()...)
+	}
+
 	data := bytes.Join(
 		[][]byte{
+			txAsBytes,
 			pow.Block.PrevHash,
-			pow.Block.HashTransactions(),
-			ToHex(int64(nonce)),
-			ToHex(int64(Difficulty)),
+			intToBytes(int(pow.Block.Timestamp)),
+			intToBytes(pow.Block.Height),
+			intToBytes(nonce),
 		},
 		[]byte{},
 	)
@@ -48,25 +56,22 @@ func (pow *ProofOfWork) InitData(nonce int) []byte {
 func (pow *ProofOfWork) Run() (int, []byte) {
 	var intHash big.Int
 	var hash [32]byte
-
 	nonce := 0
 
-	for nonce < math.MaxInt64 {
-		data := pow.InitData(nonce)
+	for nonce < maxNonce {
+		data := pow.PrepareData(nonce)
+
 		hash = sha256.Sum256(data)
-
 		fmt.Printf("\r%x", hash)
-		intHash.SetBytes(hash[:])
 
+		intHash.SetBytes(hash[:])
 		if intHash.Cmp(pow.Target) == -1 {
 			break
 		} else {
 			nonce++
 		}
-
 	}
-	fmt.Println()
-
+	fmt.Printf("\n\n")
 	return nonce, hash[:]
 }
 
@@ -74,14 +79,13 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 func (pow *ProofOfWork) Validate() bool {
 	var intHash big.Int
 
-	data := pow.InitData(pow.Block.Nonce)
-
+	data := pow.PrepareData(pow.Block.Nonce)
 	hash := sha256.Sum256(data)
 	intHash.SetBytes(hash[:])
 
-	res := intHash.Cmp(pow.Target) == -1
+	isValid := intHash.Cmp(pow.Target) == -1
 
-	return res
+	return isValid
 }
 
 // ToHex ...
